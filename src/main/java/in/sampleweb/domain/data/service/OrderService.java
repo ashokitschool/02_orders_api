@@ -25,7 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -81,10 +84,13 @@ public class OrderService {
 
         // Save order information
         Order newOrder = new Order();
+        String orderTrackingNum = generateOrderTrackingId();
+        newOrder.setOrderTrackingNum(orderTrackingNum);
         newOrder.setRazorPayOrderId(razorPayOrder.get("id"));
         newOrder.setOrderStatus(razorPayOrder.get("status"));
         newOrder.setTotalPrice(purchaseDto.getOrder().getTotalprice());
         newOrder.setEmail(customer.getEmail());
+        newOrder.setCustomer(customer);
         newOrder.setAddress(address); // Link order to the address
         orderRepo.save(newOrder);
 
@@ -101,7 +107,7 @@ public class OrderService {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setRazorpayOrderId(razorPayOrder.get("id"));
         orderResponse.setOrderStatus(razorPayOrder.get("status"));
-        orderResponse.setOrderTrackingNumber("OD-97979-75757");
+        orderResponse.setOrderTrackingNumber(orderTrackingNum);
 
         return orderResponse;
     }
@@ -147,5 +153,17 @@ public class OrderService {
         } catch (Exception e) {
             throw new RazorpayException("Failed to calculate signature.", e);
         }
+    }
+
+    public String generateOrderTrackingId() {
+        // Get the current timestamp
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timestamp = sdf.format(new Date());
+
+        // Generate a random UUID for uniqueness
+        String randomUUID = UUID.randomUUID().toString().substring(0, 5).toUpperCase();
+
+        // Combine timestamp and UUID to form the tracking ID
+        return "OD_" + timestamp + "_" + randomUUID;
     }
 }

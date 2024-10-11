@@ -1,5 +1,6 @@
 package in.sampleweb.domain.data.entity;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Data
@@ -30,12 +33,6 @@ public class Order {
 
     @Column(name = "email")
     private String email;
-
-    private String name;
-    private String phno;
-    private String course;
-    private Integer amount;
-    
 
     @Column(name = "order_status")
     private String orderStatus;
@@ -56,6 +53,14 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address address;
+
+    @CreationTimestamp
+    @Column(name="date_created", updatable = false)
+    private LocalDate dateCreated;
+
+    @UpdateTimestamp
+    @Column(name="last_updated", insertable = false)
+    private LocalDate lastUpdated;
     
     //@ElementCollection
     //private List<OrderItem> orderItems;
