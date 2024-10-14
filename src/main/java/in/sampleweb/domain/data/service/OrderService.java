@@ -65,6 +65,7 @@ public class OrderService {
         com.razorpay.Order razorPayOrder = client.Orders.create(orderRequest);
 
         Customer customer = custRepo.findByEmail(purchaseDto.getCustomer().getEmail());
+       // System.out.println("Customer Email :" + customer.getEmail());
         if(customer == null){
             customer = new Customer();
             customer.setName(purchaseDto.getCustomer().getName());
@@ -89,6 +90,7 @@ public class OrderService {
         newOrder.setRazorPayOrderId(razorPayOrder.get("id"));
         newOrder.setOrderStatus(razorPayOrder.get("status"));
         newOrder.setTotalPrice(purchaseDto.getOrder().getTotalprice());
+        newOrder.setTotalQuantity(purchaseDto.getOrder().getTotalquantity());
         newOrder.setEmail(customer.getEmail());
         newOrder.setCustomer(customer);
         newOrder.setAddress(address); // Link order to the address
@@ -112,8 +114,10 @@ public class OrderService {
         return orderResponse;
     }
 
-    public Order verifyPaymentAndUpdateOrderStatus(PaymentCallbackDTO paymentCallbackDTO) {
+    public boolean verifyPaymentAndUpdateOrderStatus(PaymentCallbackDTO paymentCallbackDTO) {
         Order order = orderRepo.findByRazorPayOrderId(paymentCallbackDTO.getRazorpayOrderId());
+        System.out.println("RazorPayOrderId :" + order.getRazorPayOrderId());
+        boolean isPaymentConfirmed = false;
         if (order != null) {
             try {
                 // Verify the payment signature
@@ -121,18 +125,16 @@ public class OrderService {
 
                 if (isValid) {
                     // Update order status and save the order
-                    order.setOrderStatus("PAID");
+                    order.setOrderStatus("Confirmed");
                     order.setRazorPayPaymentId(paymentCallbackDTO.getRazorpayPaymentId());
                     orderRepo.save(order);  // Save updated order to the database
-                    return order;
-                } else {
-                    System.out.println("Invalid payment signature.");
+                    isPaymentConfirmed =true;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return null;
+        return isPaymentConfirmed;
     }
 
     private boolean verifySignature(PaymentCallbackDTO paymentCallbackDTO) throws RazorpayException {
@@ -140,6 +142,7 @@ public class OrderService {
                 paymentCallbackDTO.getRazorpayOrderId() + "|" + paymentCallbackDTO.getRazorpayPaymentId(),
                 keySecret
         );
+        System.out.println("Signature :" + generatedSignature);
         return generatedSignature.equals(paymentCallbackDTO.getRazorpaySignature());
     }
 
@@ -165,5 +168,9 @@ public class OrderService {
 
         // Combine timestamp and UUID to form the tracking ID
         return "OD_" + timestamp + "_" + randomUUID;
+    }
+
+    public List<Order> getOrderDetails(String email){
+        return orderRepo.findByEmail(email);
     }
 }

@@ -18,9 +18,10 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
-    
-    private String productName;
+
+    private String imageUrl;
+    private String prodname;
     private int quantity;
-    private double price;
+    private double unitPrice;
     // getters and setters
 }
