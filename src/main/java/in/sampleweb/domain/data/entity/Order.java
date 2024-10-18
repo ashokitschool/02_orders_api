@@ -61,6 +61,9 @@ public class Order {
     @UpdateTimestamp
     @Column(name="last_updated", insertable = false)
     private LocalDate lastUpdated;
+
+    @Column(name="delivery_date", insertable = false)
+    private LocalDate deliveryDate;
     
     //@ElementCollection
     //private List<OrderItem> orderItems;

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -126,6 +127,7 @@ public class OrderService {
                 if (isValid) {
                     // Update order status and save the order
                     order.setOrderStatus("Confirmed");
+                    order.setDeliveryDate(deliveryDate());
                     order.setRazorPayPaymentId(paymentCallbackDTO.getRazorpayPaymentId());
                     orderRepo.save(order);  // Save updated order to the database
                     isPaymentConfirmed =true;
@@ -136,6 +138,8 @@ public class OrderService {
         }
         return isPaymentConfirmed;
     }
+
+
 
     private boolean verifySignature(PaymentCallbackDTO paymentCallbackDTO) throws RazorpayException {
         String generatedSignature = HmacSHA256(
@@ -172,5 +176,12 @@ public class OrderService {
 
     public List<Order> getOrderDetails(String email){
         return orderRepo.findByEmail(email);
+    }
+
+    private LocalDate deliveryDate() {
+
+        LocalDate currentDate = LocalDate.now();
+        LocalDate futureDate = currentDate.plusDays(2);
+        return futureDate;
     }
 }
